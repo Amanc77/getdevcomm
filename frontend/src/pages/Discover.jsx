@@ -128,14 +128,15 @@ const Discover = () => {
                     className="w-full px-3 py-2 bg-white dark:bg-dark-bg border border-gray-300 dark:border-dark-border rounded-lg text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option value="">All Stacks</option>
-                    <option value="Web (React/JS)">Web (React/JS)</option>
-                    <option value="Backend (Node)">Backend (Node)</option>
-                    <option value="Backend (Python)">Backend (Python)</option>
-                    <option value="ML/AI">ML/AI</option>
+                    <option value="React">React</option>
+                    <option value="Node.js">Node.js</option>
+                    <option value="Python">Python</option>
+                    <option value="Machine Learning">Machine Learning</option>
+                    <option value="Vue">Vue</option>
+                    <option value="Angular">Angular</option>
+                    <option value="Django">Django</option>
+                    <option value="Flask">Flask</option>
                     <option value="General">General</option>
-                    <option value="Mobile (iOS)">Mobile (iOS)</option>
-                    <option value="Mobile (Android)">Mobile (Android)</option>
-                    <option value="Game Dev">Game Dev</option>
                   </select>
                 </div>
 
@@ -155,7 +156,14 @@ const Discover = () => {
                     <option value="Reddit">Reddit</option>
                     <option value="Forum">Forum</option>
                     <option value="Telegram">Telegram</option>
+                    <option value="WhatsApp">WhatsApp</option>
                     <option value="GitHub">GitHub</option>
+                    <option value="Twitter">Twitter</option>
+                    <option value="Meetup">Meetup</option>
+                    <option value="LinkedIn">LinkedIn</option>
+                    <option value="Blog">Blog</option>
+                    <option value="Community">Community</option>
+                    <option value="Guide">Guide</option>
                   </select>
                 </div>
 
@@ -171,9 +179,10 @@ const Discover = () => {
                   >
                     <option value="">All Modes</option>
                     <option value="Global/Online">Global/Online</option>
-                    <option value="Regional (US)">Regional (US)</option>
-                    <option value="Regional (Africa)">Regional (Africa)</option>
-                    <option value="Local">Local</option>
+                    <option value="Global/Online & Offline">Global/Online & Offline</option>
+                    <option value="Offline">Offline</option>
+                    <option value="Hybrid">Hybrid</option>
+                    <option value="India/Online">India/Online</option>
                   </select>
                 </div>
 

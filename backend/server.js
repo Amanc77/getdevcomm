@@ -7,53 +7,35 @@ dotenv.config();
 
 const app = express();
 
-// Allowed origins for CORS
+// Middleware - CORS configuration
 const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:3000",
-  "http://localhost:5174",
-  "https://getdevcomm.vercel.app",
-  "https://www.getdevcomm.vercel.app",
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:5174',
+  'https://getdevcomm.vercel.app',
   process.env.CORS_ORIGIN,
-  process.env.FRONTEND_URL,
+  process.env.FRONTEND_URL
 ].filter(Boolean);
 
-// CORS configuration
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin) {
-        return callback(null, true);
-      }
-
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else if (origin.includes("vercel.app")) {
-        // Allow all Vercel preview deployments
-        callback(null, true);
-      } else if (origin.includes("netlify.app")) {
-        // Allow Netlify deployments if needed
-        callback(null, true);
-      } else {
-        // In development, allow localhost with any port
-        if (
-          process.env.NODE_ENV !== "production" &&
-          origin.startsWith("http://localhost:")
-        ) {
-          callback(null, true);
-        } else {
-          // Log blocked origin for debugging
-          console.warn(" CORS blocked origin:", origin);
-          callback(new Error("Not allowed by CORS"));
-        }
-      }
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-    exposedHeaders: ["Content-Range", "X-Content-Range"],
-  })
-);
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is allowed
+    if (allowedOrigins.includes(origin) || origin.includes('vercel.app')) {
+      callback(null, true);
+    } else if (process.env.NODE_ENV !== 'production' && origin.startsWith('http://localhost:')) {
+      // In development, allow any localhost port
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

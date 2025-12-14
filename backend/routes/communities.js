@@ -32,7 +32,9 @@ router.get('/', async (req, res) => {
     }
 
     if (tech_stack) {
-      filter.tech_stack = { $regex: tech_stack, $options: 'i' };
+      // Escape special regex characters and make case-insensitive search
+      const escapedTechStack = tech_stack.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      filter.tech_stack = { $regex: escapedTechStack, $options: 'i' };
     }
 
     if (platform) {
@@ -118,33 +120,73 @@ router.post('/', protect, [
   body('description').trim().notEmpty().withMessage('Description is required'),
   body('tech_stack').trim().notEmpty().withMessage('Tech stack is required'),
   body('platform').trim().notEmpty().withMessage('Platform is required'),
-  body('joining_link').trim().isURL().withMessage('Valid joining link is required')
+  body('location_mode').trim().notEmpty().withMessage('Location mode is required'),
+  body('joining_link').trim().notEmpty().withMessage('Joining link is required')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
+        message: 'Validation failed',
         errors: errors.array()
       });
     }
 
+    // Clean and prepare community data - only include fields that exist in the model
     const communityData = {
-      ...req.body,
-      createdBy: req.user.id
+      title: req.body.title.trim(),
+      description: req.body.description.trim(),
+      fullDescription: req.body.fullDescription?.trim() || '',
+      tech_stack: req.body.tech_stack.trim(),
+      platform: req.body.platform.trim(),
+      location_mode: req.body.location_mode.trim(),
+      tags: Array.isArray(req.body.tags) ? req.body.tags : (req.body.tags ? req.body.tags.split(',').map(t => t.trim()).filter(t => t) : []),
+      joining_link: req.body.joining_link.trim(),
+      community_page: req.body.community_page?.trim() || '',
+      logo_url: req.body.logo_url?.trim() || '',
+      member_count: parseInt(req.body.member_count) || 0,
+      activity_level: req.body.activity_level || 'Medium',
+      rules: req.body.rules?.trim() || ''
     };
+
+    // Validate URL format for joining_link
+    try {
+      new URL(communityData.joining_link);
+    } catch (urlError) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid joining link URL format'
+      });
+    }
 
     const community = await Community.create(communityData);
 
     res.status(201).json({
       success: true,
+      message: 'Community created successfully',
       data: community
     });
   } catch (error) {
+    console.error('Error creating community:', error);
+    
+    // Handle Mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.values(error.errors).map(err => ({
+        field: err.path,
+        message: err.message
+      }));
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: validationErrors
+      });
+    }
+
     res.status(500).json({
       success: false,
       message: 'Server error',
-      error: error.message
+      error: process.env.NODE_ENV === 'production' ? 'Internal server error' : error.message
     });
   }
 });

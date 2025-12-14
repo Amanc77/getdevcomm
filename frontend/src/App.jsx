@@ -18,6 +18,17 @@ function App() {
     const savedTheme = localStorage.getItem('theme');
     if (!savedTheme) {
       root.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+      document.body.style.backgroundColor = '#0F1724';
+      document.body.style.color = '#ffffff';
+    } else if (savedTheme === 'dark') {
+      root.classList.add('dark');
+      document.body.style.backgroundColor = '#0F1724';
+      document.body.style.color = '#ffffff';
+    } else {
+      root.classList.remove('dark');
+      document.body.style.backgroundColor = '#ffffff';
+      document.body.style.color = '#111827';
     }
   }, []);
 

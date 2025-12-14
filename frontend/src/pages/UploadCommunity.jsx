@@ -19,9 +19,7 @@ const UploadCommunity = () => {
     tags: '',
     joining_link: '',
     member_count: '',
-    activity_level: 'Medium',
-    weeklyPosts: '',
-    founded: ''
+    activity_level: 'Medium'
   });
 
   useEffect(() => {
@@ -41,23 +39,63 @@ const UploadCommunity = () => {
     setLoading(true);
 
     try {
-      const tagsArray = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
-      
+      // Process tags
+      const tagsArray = formData.tags 
+        ? formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
+        : [];
+
+      // Prepare community data - only send fields that the backend expects
       const communityData = {
-        ...formData,
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        fullDescription: formData.fullDescription?.trim() || '',
+        tech_stack: formData.tech_stack.trim(),
+        platform: formData.platform.trim(),
+        location_mode: formData.location_mode.trim(),
         tags: tagsArray,
+        joining_link: formData.joining_link.trim(),
         member_count: parseInt(formData.member_count) || 0,
-        weeklyPosts: parseInt(formData.weeklyPosts) || 0,
+        activity_level: formData.activity_level || 'Medium',
       };
 
-      await communitiesAPI.create(communityData);
-      setSuccess(true);
+      // Validate required fields
+      if (!communityData.title || !communityData.description || !communityData.tech_stack || 
+          !communityData.platform || !communityData.joining_link) {
+        setError('Please fill in all required fields');
+        setLoading(false);
+        return;
+      }
+
+      // Validate URL
+      try {
+        new URL(communityData.joining_link);
+      } catch (urlError) {
+        setError('Please enter a valid URL for the joining link');
+        setLoading(false);
+        return;
+      }
+
+      const response = await communitiesAPI.create(communityData);
       
-      setTimeout(() => {
-        navigate('/discover');
-      }, 2000);
+      if (response.success) {
+        setSuccess(true);
+        setTimeout(() => {
+          navigate('/discover');
+        }, 2000);
+      } else {
+        setError(response.message || 'Failed to create community');
+      }
     } catch (err) {
-      setError(err.message || 'Failed to create community');
+      // Handle API error responses
+      if (err.message) {
+        setError(err.message);
+      } else if (err.errors && Array.isArray(err.errors)) {
+        const errorMessages = err.errors.map(e => e.message || e.msg).join(', ');
+        setError(errorMessages);
+      } else {
+        setError('Failed to create community. Please try again.');
+      }
+      console.error('Error creating community:', err);
     } finally {
       setLoading(false);
     }
@@ -163,9 +201,12 @@ const UploadCommunity = () => {
                 <option value="Telegram">Telegram</option>
                 <option value="WhatsApp">WhatsApp</option>
                 <option value="GitHub">GitHub</option>
-                <option value="X (Twitter)">X (Twitter)</option>
+                <option value="Twitter">Twitter</option>
                 <option value="Meetup">Meetup</option>
                 <option value="LinkedIn">LinkedIn</option>
+                <option value="Blog">Blog</option>
+                <option value="Community">Community</option>
+                <option value="Guide">Guide</option>
               </select>
             </div>
           </div>
@@ -183,9 +224,10 @@ const UploadCommunity = () => {
                 className="w-full px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="Global/Online">Global/Online</option>
-                <option value="Regional (US)">Regional (US)</option>
-                <option value="Regional (Africa)">Regional (Africa)</option>
-                <option value="Local">Local</option>
+                <option value="Global/Online & Offline">Global/Online & Offline</option>
+                <option value="Offline">Offline</option>
+                <option value="Hybrid">Hybrid</option>
+                <option value="India/Online">India/Online</option>
               </select>
             </div>
 
@@ -236,46 +278,19 @@ const UploadCommunity = () => {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Member Count
-              </label>
-              <input
-                type="number"
-                name="member_count"
-                value={formData.member_count}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Weekly Posts
-              </label>
-              <input
-                type="number"
-                name="weeklyPosts"
-                value={formData.weeklyPosts}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Founded Year
-              </label>
-              <input
-                type="text"
-                name="founded"
-                value={formData.founded}
-                onChange={handleChange}
-                placeholder="2018"
-                className="w-full px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Member Count
+            </label>
+            <input
+              type="number"
+              name="member_count"
+              value={formData.member_count}
+              onChange={handleChange}
+              min="0"
+              placeholder="0"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+            />
           </div>
 
           <div className="flex space-x-4">

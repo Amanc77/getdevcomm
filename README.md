@@ -11,6 +11,13 @@ A modern MERN stack web application that helps college students and developers f
 - 📱 **Responsive Design** - Works beautifully on desktop, tablet, and mobile
 - ⚡ **Fast Performance** - Built with Vite and React for optimal performance
 
+
+
+https://github.com/user-attachments/assets/99ef4e84-84a3-4ca2-a244-4cdfcb8a0780
+
+
+
+
 ## Tech Stack
 
 ### Frontend
